@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { fetchMovieVideos } from "../services/tmdb";
+import { addToWatchlist } from "../utils/watchlist";
+import { toast } from "react-toastify";
 
 export default function MovieDetail() {
   const { id } = useParams();
@@ -75,6 +77,15 @@ export default function MovieDetail() {
             <span>Rating: ⭐ {movie.vote_average}</span>
             <span>Genres: {movie.genres.map((g) => g.name).join(", ")}</span>
           </div>
+          <button
+            onClick={() => {
+              addToWatchlist(movie);
+              toast.success(`${movie.title} added to your watchlist!`);
+            }}
+            className="mb-4 px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-white font-semibold transition"
+          >
+            + Add to Watchlist
+          </button>
           <p className="mb-6 text-lg leading-relaxed break-words max-w-full">{movie.overview}</p>
 
           {/* Trailer Video */}
