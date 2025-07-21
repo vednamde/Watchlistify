@@ -1,50 +1,46 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React from "react";
+import HeroBanner from "../components/HeroBanner";
 import SearchBar from "../components/SearchBar";
+import TrendingMovies from "../components/TrendingMovies";
+import SkeletonCard from "../components/SkeletonCard";
 import MovieCard from "../components/MovieCard";
 import MovieModal from "../components/MovieModal";
-import TrendingMovies from "../components/TrendingMovies";
-import GenreChips from "../components/GenreChips";
-import { fetchGenres } from "../services/genres";
-import { motion, AnimatePresence } from "framer-motion";
-import SkeletonCard from "../components/SkeletonCard";
+import GenreDropdown from "../components/GenreDropdown";
+import Filters from "../components/Filters";
+import { getGenres } from '../services/genres';
+import { AnimatePresence, motion } from "framer-motion";
 
-const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
+export default function Home({ results = [], loading, onLoadMore, setSearchResults, selectedIds, toggleGenre, genres, filters, onFilterChange, onClearFilters }) {
+  const [selectedMovie, setSelectedMovie] = React.useState(null);
+  const [randomTrailerKey, setRandomTrailerKey] = React.useState(null);
 
-export default function Home() {
-  const [results, setResults] = useState([]);
-  const [selectedMovie, setSelectedMovie] = useState(null);
-  const [genres, setGenres] = useState([]);
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    fetchGenres().then(setGenres);
-  }, []);
-
-  useEffect(() => {
-    if (selectedIds.length === 0) return;
-    setLoading(true);
-    axios
-      .get("https://api.themoviedb.org/3/discover/movie", {
-        params: {
-          api_key: API_KEY,
-          with_genres: selectedIds.join(","),
-        },
-      })
-      .then((r) => setResults(r.data.results))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [selectedIds]);
-
-  const toggleGenre = (id) =>
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]
-    );
-
-  const clearGenres = () => setSelectedIds([]);
-  const handleSearch = (list) => setResults(list);
   const openMovie = (m) => setSelectedMovie(m);
+  const featuredMovie = results.length > 0 ? results[0] : null;
+
+  React.useEffect(() => {
+    const fetchRandomTrailer = async () => {
+      try {
+        const randomMovie =
+          results[Math.floor(Math.random() * results.length)];
+        const response = await fetch(`YOUR_API_URL_FOR_MOVIE_VIDEOS/${randomMovie.id}`);
+        if (!response.ok) throw new Error("Failed to fetch movie videos");
+        const videos = await response.json();
+        const trailer = videos.find(
+          (vid) => vid.type === "Trailer" && vid.site === "YouTube"
+        );
+        setRandomTrailerKey(trailer ? trailer.key : null);
+      } catch (error) {
+        console.error("Failed to fetch random trailer:", error);
+        setRandomTrailerKey(null);
+      }
+    };
+
+    if (results.length > 0) {
+      fetchRandomTrailer();
+      const interval = setInterval(fetchRandomTrailer, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [results]);
 
   return (
     <motion.div
@@ -53,38 +49,62 @@ export default function Home() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      {/* 🔍 Search Bar with animation */}
+      {/* 🎬 Hero Banner */}
+      {featuredMovie && <HeroBanner movie={featuredMovie} />}
+
+      {/* 🔍 Search Bar */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4 }}
       >
-        <SearchBar onResults={handleSearch} />
+        <SearchBar onResults={setSearchResults} />
       </motion.div>
 
-      {/* 🎭 Genre Chips */}
+      {/* 🛠 Advanced Filters */}
       <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.4, delay: 0.2 }}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex justify-center"
       >
-        <GenreChips
+        <Filters
+          filters={filters}
+          onFilterChange={onFilterChange}
+          onClearFilters={onClearFilters}
+        />
+      </motion.div>
+
+      {/* 📂 Genre Dropdown with animation */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex justify-center"
+      >
+        <GenreDropdown
           genres={genres}
           selectedIds={selectedIds}
           onToggle={toggleGenre}
         />
-        {selectedIds.length > 0 && (
-          <button
-            className="mt-2 text-sm text-red-400"
-            onClick={clearGenres}
-          >
-            Clear filters ✖
-          </button>
-        )}
       </motion.div>
 
-      {/* 🔥 Trending section */}
-      {selectedIds.length === 0 && results.length === 0 && (
+      {/* 🎥 Random Trailer */}
+      {randomTrailerKey && (
+        <div className="w-full aspect-video rounded-lg overflow-hidden shadow-lg">
+          <iframe
+            title="Random Trending Trailer"
+            src={`https://www.youtube.com/embed/${randomTrailerKey}?autoplay=1&mute=1&controls=1&loop=1&playlist=${randomTrailerKey}`}
+            frameBorder="0"
+            allow="autoplay; encrypted-media"
+            allowFullScreen
+            className="w-full h-full"
+          />
+        </div>
+      )}
+
+      {/* 🔥 Trending Section */}
+      {results.length === 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -94,7 +114,7 @@ export default function Home() {
         </motion.div>
       )}
 
-      {/* 🎬 Movie Results Grid */}
+      {/* 🎞 Movie Grid */}
       <motion.div
         className="grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
         initial="hidden"
@@ -128,7 +148,19 @@ export default function Home() {
             ))}
       </motion.div>
 
-      {/* 📽 Modal with AnimatePresence */}
+      {/* ⬇️ Load More Button */}
+      {!loading && results.length > 0 && (
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={onLoadMore}
+            className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded text-white font-semibold"
+          >
+            Load More
+          </button>
+        </div>
+      )}
+
+      {/* 🎬 Modal */}
       <AnimatePresence>
         {selectedMovie && (
           <MovieModal

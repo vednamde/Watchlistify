@@ -8,7 +8,7 @@ export default function MovieCard({ movie }) {
 
   const poster = movie.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-    : "https://via.placeholder.com/300x450?text=No+Image";
+    : "https://placehold.co/300x450?text=No+Image";
 
   const releaseYear = movie.release_date
     ? new Date(movie.release_date).getFullYear()
@@ -16,37 +16,33 @@ export default function MovieCard({ movie }) {
 
   // this stops <Link> navigation only for the button click
   const handleAdd = (e) => {
-    e.preventDefault();          // ⛔️ keep card from navigating
+    e.preventDefault(); // ⛔️ keep card from navigating
     addToWatchlist(movie);
     toast.success(`${movie.title} added to your watchlist!`);
   };
 
   return (
-    <Link           /* Link guarantees navigation to the detail page */
+    <Link
       to={`/movie/${movie.id}`}
-      className="block"
+      className="block relative group"
     >
       <div
-        onClick={() => onClick?.()}
         className="bg-[#1c1c1c] rounded-2xl overflow-hidden shadow-lg 
              hover:shadow-red-700/40 transition-transform 
-             duration-300 hover:-translate-y-1 cursor-pointer"
+             duration-300 hover:-translate-y-1 cursor-pointer relative"
       >
         <img
           src={poster}
           alt={movie.title}
+          loading="lazy"
           className="rounded-md mb-2 w-full h-[360px] object-cover"
         />
-        <h2 className="text-lg font-semibold">{movie.title}</h2>
-        <p className="text-sm text-gray-400">{releaseYear}</p>
-        <p className="text-yellow-400 mb-2">⭐ {movie.vote_average || "N/A"}</p>
-
-        <button
-          onClick={handleAdd}
-          className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-white text-sm"
-        >
-          ➕ Add to Watchlist
-        </button>
+        <div className="px-3 pb-3 bg-black bg-opacity-2 backdrop-blur-md rounded-md">
+          <h3 className="text-white font-semibold text-lg truncate" title={movie.title}>
+            {movie.title}
+          </h3>
+          <p className="text-red-500 font-semibold mt-1">⭐ {movie.vote_average}</p>
+        </div>
       </div>
     </Link>
   );

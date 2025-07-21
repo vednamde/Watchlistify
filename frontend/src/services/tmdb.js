@@ -21,3 +21,10 @@ export const fetchTrendingMovies = async () => {
   });
   return response.data.results;
 };
+
+export const fetchMovieVideos = async (movieId) => {
+  const response = await axios.get(`${BASE_URL}/movie/${movieId}/videos`, {
+    params: { api_key: API_KEY },
+  });
+  return response.data.results;
+};

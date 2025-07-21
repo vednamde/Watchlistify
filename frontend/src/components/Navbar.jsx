@@ -3,25 +3,27 @@ import { Link, NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
 import logo from "../assets/logo.png";
 
-export default function Navbar() {
+export default function Navbar({ filters, onFilterChange }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [hide, setHide] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const isLoggedIn = false; // 🔁 Replace this with real logic
 
   useEffect(() => {
-    let lastScrollY = window.scrollY;
+    // Disable hiding navbar on scroll as per user request
+    // let lastScrollY = window.scrollY;
 
-    const handleScroll = () => {
-      if (window.scrollY > lastScrollY && window.scrollY > 50) {
-        setHide(true); // scrolling down
-      } else {
-        setHide(false); // scrolling up
-      }
-      lastScrollY = window.scrollY;
-    };
+    // const handleScroll = () => {
+    //   if (window.scrollY > lastScrollY && window.scrollY > 50) {
+    //     setHide(true); // scrolling down
+    //   } else {
+    //     setHide(false); // scrolling up
+    //   }
+    //   lastScrollY = window.scrollY;
+    // };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    // window.addEventListener("scroll", handleScroll);
+    // return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
@@ -39,7 +41,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-6 text-sm font-medium">
+        <div className="hidden md:flex items-center gap-6 text-sm font-medium relative">
           <NavLink
             to="/"
             className={({ isActive }) =>
