@@ -13,6 +13,7 @@ import { AnimatePresence, motion } from "framer-motion";
 export default function Home({ results = [], loading, onLoadMore, setSearchResults, selectedIds, toggleGenre, genres, filters, onFilterChange, onClearFilters }) {
   const [selectedMovie, setSelectedMovie] = React.useState(null);
   const [randomTrailerKey, setRandomTrailerKey] = React.useState(null);
+  const [showFilters, setShowFilters] = React.useState(false);
 
   const openMovie = (m) => setSelectedMovie(m);
   const featuredMovie = results.length > 0 ? results[0] : null;
@@ -61,19 +62,31 @@ export default function Home({ results = [], loading, onLoadMore, setSearchResul
         <SearchBar onResults={setSearchResults} />
       </motion.div>
 
+      {/* Toggle Filters Button */}
+      <div className="flex justify-center mb-4">
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow transition"
+        >
+          {showFilters ? "Hide Filters" : "Show Filters"}
+        </button>
+      </div>
+
       {/* 🛠 Advanced Filters */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex justify-center"
-      >
-        <Filters
-          filters={filters}
-          onFilterChange={onFilterChange}
-          onClearFilters={onClearFilters}
-        />
-      </motion.div>
+      {showFilters && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex justify-center"
+        >
+          <Filters
+            filters={filters}
+            onFilterChange={onFilterChange}
+            onClearFilters={onClearFilters}
+          />
+        </motion.div>
+      )}
 
       {/* 📂 Genre Dropdown with animation */}
       <motion.div
